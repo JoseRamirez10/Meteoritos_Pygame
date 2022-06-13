@@ -1,0 +1,3 @@
+([('meteoritos',
+   '/Users/jozfama/Documents/Udemy/Pygame/meteoritos/dist/meteoritos',
+   'EXECUTABLE')],)

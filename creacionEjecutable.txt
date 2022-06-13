@@ -1,0 +1,4 @@
+pyinstaller --windowed --onefile meteoritos.py
+
+Genera la carpeta build y dist
+    Ejecutar la app de la carpeta dist
