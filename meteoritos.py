@@ -1,3 +1,4 @@
+from curses import KEY_ENTER
 import pygame, sys
 from pygame.locals import *
 from random import randint
@@ -36,8 +37,25 @@ def reiniciar():
     global puntos;
     puntos = 0;
 
+def pausa():
+    global running;
+    paused = True;
+    while paused:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                paused = False;
+                pygame.quit();
+                sys.exit;
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_RETURN:
+                    paused = False;
+            elif evento.type == pygame.JOYBUTTONDOWN:
+                if evento.button == button_keys['options']:
+                    paused = False;
+
 # Funcion principal
 def Meteoritos():
+    global button_keys;
     pygame.init();
     ventana = pygame.display.set_mode((ANCHO, ALTO));
 
@@ -158,6 +176,8 @@ def Meteoritos():
                     elif evento.key == K_SPACE:
                         x, y = nave.rect.center; # Obtiene las coordenadas de la nave
                         nave.disparo(x, y); # Reproduce el disparo en las coordenadas de la nave
+                    elif evento.key == K_RETURN:
+                        pausa();
             elif evento.type == pygame.KEYUP: # Al soltar una tecla
                 if jugando == True:
                     if evento.key == K_LEFT:
@@ -185,8 +205,7 @@ def Meteoritos():
                     nave.movimiento_derecha = True;
                 elif evento.button == button_keys['options']:
                     # Configurar evento para dar pausa
-                    print('Pausa');
-                    pass 
+                    pausa();
                 elif evento.button == button_keys['x']: # Evento de disparo
                     x, y = nave.rect.center; # Obtiene las coordenadas de la nave
                     nave.disparo(x, y); # Reproduce el disparo en las coordenadas de la nave
