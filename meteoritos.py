@@ -1,7 +1,8 @@
 import pygame, sys
 from pygame.locals import *
 from random import randint
-from time import time 
+from time import time
+import json, os 
 
 # Clases
 from clases import jugador
@@ -65,6 +66,21 @@ def Meteoritos():
     # Boton y fuente para reiniciar el juego
     fuentePlay = pygame.font.SysFont("Arial", 30);
     botonPlay = Rect(167,400,150,50);
+
+    ########## Incorporacion de control análogo ##############
+
+    joysticks = [];
+    for i in range(pygame.joystick.get_count()):
+        joysticks.append(pygame.joystick.Joystick(i));
+    for joystick in joysticks:
+        joystick.init();
+
+    with open(os.path.join("ps4_keys.json"), 'r+') as file:
+        button_keys = json.load(file)
+
+    analog_keys = {0:0, 1:0, 2:0, 3:0, 4:-1, 5:-1}
+
+    ##########################################################
 
     # ciclo del juego
     while True:
@@ -156,7 +172,51 @@ def Meteoritos():
                     reiniciar(); # Reinicia los puntos 
                     del nave; # Elimina el objeto nave
                     nave = jugador.Nave(); # Vuelve a instaciar el objeto nave con sus valores inciales
-                     
+        
+        ############### Eventos del control análogo ########################
+
+        # * La nave solo se mueve en horizontal
+        
+        # Eventos de presionar la cruceta
+            elif evento.type == pygame.JOYBUTTONDOWN:
+                if evento.button == button_keys['left_arrow']:
+                    nave.movimiento_izquierda = True;
+                elif evento.button == button_keys['right_arrow']:
+                    nave.movimiento_derecha = True;
+                elif evento.button == button_keys['options']:
+                    # Configurar evento para dar pausa
+                    print('Pausa');
+                    pass 
+                elif evento.button == button_keys['x']: # Evento de disparo
+                    x, y = nave.rect.center; # Obtiene las coordenadas de la nave
+                    nave.disparo(x, y); # Reproduce el disparo en las coordenadas de la nave
+        # Eventos de soltar la cruceta
+            elif evento.type == pygame.JOYBUTTONUP:
+                if evento.button == button_keys['left_arrow']:
+                    nave.movimiento_izquierda = False;
+                elif evento.button == button_keys['right_arrow']:
+                    nave.movimiento_derecha = False;
+
+        # Eventos de joystick analogo izquiero y gatillo derecho
+            elif evento.type == pygame.JOYAXISMOTION:
+                analog_keys[evento.axis] = evento.value;
+
+                if abs(analog_keys[0]) > 0.4:
+                    if analog_keys[0] < -0.7:
+                        nave.movimiento_izquierda = True;
+                    else:
+                        nave.movimiento_izquierda = False;
+                    if analog_keys[0] > 0.7:
+                        nave.movimiento_derecha = True;
+                    else:
+                        nave.movimiento_derecha = False;
+
+                if analog_keys[5] == 1: # Gatillo derecho -> Disparo
+                    x, y = nave.rect.center; # Obtiene las coordenadas de la nave
+                    nave.disparo(x, y); # Reproduce el disparo en las coordenadas de la nave
+                    analog_keys[5] = -1;
+
+        ####################################################################
         
         # Cuando el jugador pierde
         if jugando == False:
